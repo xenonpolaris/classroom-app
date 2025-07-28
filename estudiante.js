@@ -6,9 +6,11 @@ const estudianteClient = new Appwrite.Client()
 const estudianteDatabase = new Appwrite.Databases(estudianteClient);
 
 // IMPORTANTE: Verifica estos IDs en tu consola de Appwrite
-const PROJECT_ID = '688733b70004aba4f8f1';
-const 688733b70004aba4f8f1 = 'main'; // Cambia esto por tu Database ID real
-const COLLECTION_ID = 'estudiantes'; // Verifica que esta colección existe
+// Configuración correcta
+const PROJECT_ID = '6887335f0033b38b7bd2';                // ← ID de proyecto
+const DATABASE_ID = '688733b70004aba4f8f1';               // ← ID de base de datos
+const COLLECTION_ID = '688733d300186c50067b';             // ← ID de colección
+
 
 async function ingresarEstudiante() {
   const nombre = document.getElementById('student-name').value.trim();
