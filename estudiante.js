@@ -1,8 +1,8 @@
-const client = new Appwrite.Client()
+const appwriteClient = new Appwrite.Client()
   .setEndpoint('https://cloud.appwrite.io/v1')
   .setProject('688733b70004aba4f8f1');
 
-const database = new Appwrite.Databases(client);
+const database = new Appwrite.Databases(appwriteClient);
 const DB_ID = '688733b70004aba4f8f1';
 const COLLECTION_ID = 'estudiantes';
 
