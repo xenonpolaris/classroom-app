@@ -78,8 +78,7 @@ async function renderStudentCard(nombre) {
 }
 
 // 🔄 Suscripción en tiempo real
-const dashboardRealtime = new Appwrite.Realtime(dashboardClient);
-dashboardRealtime.subscribe(`databases.${DB_ID}.collections.${COLLECTION_ID}.documents`, () => {
+dashboardClient.subscribe(`databases.${DB_ID}.collections.${COLLECTION_ID}.documents`, () => {
   renderDashboard();
 });
 
