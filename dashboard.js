@@ -6,8 +6,8 @@ const dashboardClient = new Appwrite.Client()
 const dashboardDatabase = new Appwrite.Databases(dashboardClient);
 
 // IMPORTANTE: Necesitas verificar estos IDs en tu consola de Appwrite
-const PROJECT_ID = '688733b70004aba4f8f1';
-const DATABASE_ID = 'main'; // Cambia esto por tu Database ID real
+const PROJECT_ID = '6887335f0033b38b7bd2';
+const DATABASE_ID = '688733b70004aba4f8f1'; // Cambia esto por tu Database ID real
 const COLLECTION_ID = 'estudiantes'; // Verifica que esta colección existe
 
 async function verificarConfiguracion() {
