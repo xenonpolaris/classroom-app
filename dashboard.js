@@ -1,46 +1,30 @@
-// Configuración del cliente de Appwrite para dashboard
 const dashboardClient = new Appwrite.Client()
   .setEndpoint('https://cloud.appwrite.io/v1')
   .setProject('6887335f0033b38b7bd2');
 
 const dashboardDatabase = new Appwrite.Databases(dashboardClient);
 
-// IMPORTANTE: Necesitas verificar estos IDs en tu consola de Appwrite
-const PROJECT_ID = '6887335f0033b38b7bd2';
-const DATABASE_ID = '688733b70004aba4f8f1'; // Cambia esto por tu Database ID real
-const COLLECTION_ID = 'estudiantes'; // Verifica que esta colección existe
+const DATABASE_ID = '688733b70004aba4f8f1';
+const COLLECTION_ID = '688733d300186c50067b';
 
+// Verificar conexión usando una lectura válida
 async function verificarConfiguracion() {
   try {
-    console.log('Verificando configuración de Appwrite...');
-    console.log('Project ID:', PROJECT_ID);
-    console.log('Database ID:', DATABASE_ID);
-    console.log('Collection ID:', COLLECTION_ID);
-    
-    // Intentar listar las bases de datos disponibles
-    const databases = await dashboardDatabase.list();
-    console.log('Bases de datos disponibles:', databases);
-    
+    await dashboardDatabase.listDocuments(DATABASE_ID, COLLECTION_ID, [], 1);
+    console.log('✅ Conexión con Appwrite verificada');
     return true;
   } catch (error) {
-    console.error('Error de configuración:', error);
-    
-    // Mostrar mensaje de error específico
+    console.error('❌ Error de configuración:', error);
     const dashboard = document.getElementById('dashboard');
     dashboard.innerHTML = `
-      <div class="card" style="background-color: #ffebee; border-color: #f44336;">
+      <div class="card" style="background-color: #ffebee;">
         <h3 style="color: #d32f2f;">Error de Configuración</h3>
         <p><strong>Problema:</strong> ${error.message}</p>
         <p><strong>Código:</strong> ${error.code || 'N/A'}</p>
-        <h4>Pasos para solucionarlo:</h4>
-        <ol>
-          <li>Ve a tu <a href="https://cloud.appwrite.io/console" target="_blank">Consola de Appwrite</a></li>
-          <li>Selecciona tu proyecto: <code>${PROJECT_ID}</code></li>
-          <li>Ve a <strong>Settings → Platforms</strong></li>
-          <li>Agrega una nueva plataforma Web con la URL: <code>https://classroom-app-delta.vercel.app</code></li>
-          <li>Ve a <strong>Databases</strong> y verifica que existe una base de datos</li>
-          <li>Dentro de la base de datos, verifica que existe la colección <code>${COLLECTION_ID}</code></li>
-          <li>Copia el <strong>Database ID</strong> real y actualiza el código</li>
+        <ol style="text-align: left; font-size: 13px;">
+          <li>Confirma que el <strong>Database ID</strong> y <strong>Collection ID</strong> están bien escritos</li>
+          <li>Agrega tu dominio en Appwrite → Platforms → Web</li>
+          <li>Verifica permisos en la colección “estudiantes” (lectura pública o por sesión)</li>
         </ol>
       </div>
     `;
@@ -48,98 +32,73 @@ async function verificarConfiguracion() {
   }
 }
 
+// Cargar estudiantes
 async function obtenerEstudiantes() {
-  try {
-    const res = await dashboardDatabase.listDocuments(DATABASE_ID, COLLECTION_ID);
-    return res.documents;
-  } catch (error) {
-    console.error('Error al obtener estudiantes:', error);
-    throw error;
-  }
+  const res = await dashboardDatabase.listDocuments(DATABASE_ID, COLLECTION_ID);
+  return res.documents;
 }
 
+// Generar resumen del banco
+function generarResumen(estudiantes) {
+  const total = estudiantes.length;
+  const saldoTotal = estudiantes.reduce((acc, est) => acc + (est.balance || 0), 0);
+  return { total, saldoTotal };
+}
+
+// Renderizar vista
 async function renderDashboard() {
   const dashboard = document.getElementById('dashboard');
-  
-  // Primero verificar la configuración
   const configOk = await verificarConfiguracion();
-  if (!configOk) {
-    return; // El error ya se mostró en verificarConfiguracion
-  }
-  
+  if (!configOk) return;
+
+  const estudiantes = await obtenerEstudiantes();
+  const resumen = generarResumen(estudiantes);
   dashboard.innerHTML = '';
 
-  try {
-    // Mostrar información del banco
-    const bancoCard = document.createElement('div');
-    bancoCard.className = 'card banco';
-    bancoCard.innerHTML = `
+  // Banco Central
+  dashboard.innerHTML += `
+    <div class="card banco">
       <h3>Banco Central</h3>
-      <p>Balance: $0</p>
-      <p style="color: #4caf50; font-size: 12px;">✓ Conectado a Appwrite</p>
-    `;
-    dashboard.appendChild(bancoCard);
+      <p>Estudiantes: ${resumen.total}</p>
+      <p>Balance total: $${resumen.saldoTotal.toLocaleString()}</p>
+      <p style="color: #4caf50;">✓ Conectado a Appwrite</p>
+    </div>
+  `;
 
-    // Obtener y mostrar estudiantes
-    const estudiantes = await obtenerEstudiantes();
-    
-    if (estudiantes.length === 0) {
-      const noData = document.createElement('div');
-      noData.className = 'card';
-      noData.innerHTML = `
+  if (estudiantes.length === 0) {
+    dashboard.innerHTML += `
+      <div class="card">
         <p>No hay estudiantes registrados</p>
-        <p style="font-size: 12px; color: #666;">
-          Ve a la página de <a href="estudiante.html">Estudiante</a> para agregar uno.
-        </p>
-      `;
-      dashboard.appendChild(noData);
-      return;
-    }
+        <a href="estudiante.html">Agregar uno</a>
+      </div>
+    `;
+    return;
+  }
 
-    // Mostrar cada estudiante
-    estudiantes.forEach(est => {
-      const card = document.createElement('div');
-      card.className = 'card estudiante';
-      card.innerHTML = `
+  estudiantes.forEach(est => {
+    dashboard.innerHTML += `
+      <div class="card estudiante">
         <h3>${est.nombre}</h3>
         <p>Balance: $${est.balance?.toLocaleString() || 0}</p>
         <p>Net Worth: $${est.netWorth?.toLocaleString() || 0}</p>
         <p style="font-size: 10px; color: #999;">ID: ${est.$id}</p>
-      `;
-      dashboard.appendChild(card);
-    });
-
-  } catch (error) {
-    console.error('Error al renderizar dashboard:', error);
-    const errorCard = document.createElement('div');
-    errorCard.className = 'card';
-    errorCard.style.backgroundColor = '#ffebee';
-    errorCard.style.borderColor = '#f44336';
-    errorCard.innerHTML = `
-      <h3 style="color: #d32f2f;">Error al cargar datos</h3>
-      <p><strong>Error:</strong> ${error.message}</p>
-      <p><strong>Tipo:</strong> ${error.type || 'Desconocido'}</p>
-      <p style="font-size: 12px;">Revisa la consola para más detalles.</p>
+      </div>
     `;
-    dashboard.appendChild(errorCard);
-  }
-}
-
-// Intentar suscripción en tiempo real (opcional)
-try {
-  dashboardClient.subscribe(`databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`, (response) => {
-    console.log('Actualización en tiempo real:', response);
-    renderDashboard();
   });
-} catch (error) {
-  console.log('Suscripción en tiempo real no disponible:', error.message);
 }
 
-// Cargar dashboard al inicio
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('Iniciando dashboard...');
-  renderDashboard();
-});
+// Suscripción en tiempo real
+dashboardClient.subscribe(
+  `databases.${DATABASE_ID}.collections.${COLLECTION_ID}.documents`,
+  () => renderDashboard()
+);
 
-// También cargar inmediatamente por si el DOM ya está listo
-renderDashboard();
+// Cargar al iniciar
+document.addEventListener('DOMContentLoaded', renderDashboard);
+// Cargar al iniciar cuando el DOM está listo
+document.addEventListener('DOMContentLoaded', renderDashboard);
+
+// También ejecutar inmediatamente por si el DOM ya fue cargado
+if (document.readyState !== 'loading') {
+  renderDashboard();
+}
