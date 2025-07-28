@@ -1,10 +1,10 @@
-const client = new Appwrite.Client();
+const cliente = new Appwrite.Cliente();
 
-client
+cliente
   .setEndpoint('https://cloud.appwrite.io/v1')
   .setProject('688733b70004aba4f8f1');
 
-const database = new Appwrite.Databases(client);
+const database = new Appwrite.Databases(cliente);
 const DB_ID = 'TU_DATABASE_ID'; // ← Actualízalo con tu ID real
 const COLLECTION_ID = 'estudiantes';
 
@@ -78,7 +78,7 @@ async function renderStudentCard(nombre) {
 }
 
 // 🔄 Suscripción en tiempo real
-const realtime = new Appwrite.Realtime(client);
+const realtime = new Appwrite.Realtime(cliente);
 realtime.subscribe(`databases.${DB_ID}.collections.${COLLECTION_ID}.documents`, () => {
   renderDashboard();
 });
