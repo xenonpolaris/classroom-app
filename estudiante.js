@@ -1,22 +1,30 @@
-const client = new Appwrite.Client()
-  //.setEndpoint('https://cloud.appwrite.io/v1')
+// IMPORTANTE: Esto solo funciona si estás usando un entorno tipo Vite, Webpack o similar.
+// Si lo usas en navegador directo, necesitarás incluir el SDK desde CDN (puedo ayudarte con eso también).
+
+import { Client, Databases, ID, Query } from 'appwrite';
+
+// Configuración del cliente
+const client = new Client()
+  //.setEndpoint('https://cloud.appwrite.io/v1') // Descomenta si es necesario
   .setProject('688733b70004aba4f8f1');
 
-const database = new Appwrite.Databases(client);
+// Inicializar base de datos
+const database = new Databases(client);
 const DB_ID = '688733b70004aba4f8f1';
 const COLLECTION_ID = 'estudiantes';
 
+// Función para ingresar estudiante
 async function ingresarEstudiante() {
   const nombre = document.getElementById('student-name').value.trim();
   if (!nombre || nombre.length < 3) return alert('Nombre inválido');
 
   const existe = await database.listDocuments(DB_ID, COLLECTION_ID, [
-    Appwrite.Query.equal('nombre', nombre)
+    Query.equal('nombre', nombre)
   ]);
 
   let estudiante;
   if (existe.total === 0) {
-    estudiante = await database.createDocument(DB_ID, COLLECTION_ID, Appwrite.ID.unique(), {
+    estudiante = await database.createDocument(DB_ID, COLLECTION_ID, ID.unique(), {
       nombre,
       balance: 1500,
       netWorth: 0
@@ -31,6 +39,7 @@ async function ingresarEstudiante() {
   renderStudentCard(estudiante);
 }
 
+// Renderizar tarjeta del estudiante
 function renderStudentCard(estudiante) {
   const container = document.getElementById('student-card');
   container.innerHTML = '';
@@ -59,6 +68,7 @@ function renderStudentCard(estudiante) {
   container.appendChild(card);
 }
 
+// Mostrar formulario de transferencia
 async function mostrarTransferencia(remitenteId) {
   const container = document.getElementById('student-card');
 
@@ -79,6 +89,7 @@ async function mostrarTransferencia(remitenteId) {
   container.insertAdjacentHTML('beforeend', html);
 }
 
+// Ejecutar la transferencia
 async function ejecutarTransferencia(remitenteId) {
   const btn = document.getElementById('btnTransferir');
   btn.disabled = true;
@@ -111,10 +122,8 @@ async function ejecutarTransferencia(remitenteId) {
   renderStudentCard(estudianteActualizado);
 }
 
+// Eliminar estudiante
 async function eliminarEstudiante(estudianteId) {
   await database.deleteDocument(DB_ID, COLLECTION_ID, estudianteId);
   document.getElementById('student-card').innerHTML = '';
 }
-
-
-
