@@ -1,7 +1,7 @@
 // Configuración del cliente de Appwrite para dashboard
 const dashboardClient = new Appwrite.Client()
   .setEndpoint('https://cloud.appwrite.io/v1')
-  .setProject('688733b70004aba4f8f1');
+  .setProject('6887335f0033b38b7bd2');
 
 const dashboardDatabase = new Appwrite.Databases(dashboardClient);
 
