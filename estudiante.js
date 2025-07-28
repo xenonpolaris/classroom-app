@@ -1,6 +1,6 @@
-const client = new Appwrite.Client()
-  .setEndpoint('https://cloud.appwrite.io/v1')
-  .setProject('688733b70004aba4f8f1');
+//const client = new Appwrite.Client()
+  //.setEndpoint('https://cloud.appwrite.io/v1')
+  //.setProject('688733b70004aba4f8f1');
 
 const database = new Appwrite.Databases(client);
 const DB_ID = '688733b70004aba4f8f1';
