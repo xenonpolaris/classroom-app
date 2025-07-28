@@ -1,8 +1,8 @@
-const appwriteClient = new Appwrite.Client()
+const estudianteClient = new Appwrite.Client()
   .setEndpoint('https://cloud.appwrite.io/v1')
   .setProject('688733b70004aba4f8f1');
 
-const database = new Appwrite.Databases(appwriteClient);
+const estudianteDatabase = new Appwrite.Databases(estudianteClient);
 const DB_ID = '688733b70004aba4f8f1';
 const COLLECTION_ID = 'estudiantes';
 
@@ -10,13 +10,13 @@ async function ingresarEstudiante() {
   const nombre = document.getElementById('student-name').value.trim();
   if (!nombre || nombre.length < 3) return alert('Nombre inválido');
 
-  const existe = await database.listDocuments(DB_ID, COLLECTION_ID, [
+  const existe = await estudianteDatabase.listDocuments(DB_ID, COLLECTION_ID, [
     Appwrite.Query.equal('nombre', nombre)
   ]);
 
   let estudiante;
   if (existe.total === 0) {
-    estudiante = await database.createDocument(DB_ID, COLLECTION_ID, Appwrite.ID.unique(), {
+    estudiante = await estudianteDatabase.createDocument(DB_ID, COLLECTION_ID, Appwrite.ID.unique(), {
       nombre,
       balance: 1500,
       netWorth: 0
@@ -62,7 +62,7 @@ function renderStudentCard(estudiante) {
 async function mostrarTransferencia(remitenteId) {
   const container = document.getElementById('student-card');
 
-  const todos = await database.listDocuments(DB_ID, COLLECTION_ID);
+  const todos = await estudianteDatabase.listDocuments(DB_ID, COLLECTION_ID);
   const remitente = todos.documents.find(e => e.$id === remitenteId);
 
   const opciones = todos.documents
@@ -91,30 +91,27 @@ async function ejecutarTransferencia(remitenteId) {
     return alert('Monto inválido');
   }
 
-  const remitente = await database.getDocument(DB_ID, COLLECTION_ID, remitenteId);
+  const remitente = await estudianteDatabase.getDocument(DB_ID, COLLECTION_ID, remitenteId);
   if (remitente.balance < monto) {
     btn.disabled = false;
     return alert('Fondos insuficientes');
   }
 
-  const destinatario = await database.getDocument(DB_ID, COLLECTION_ID, destinatarioId);
+  const destinatario = await estudianteDatabase.getDocument(DB_ID, COLLECTION_ID, destinatarioId);
 
-  await database.updateDocument(DB_ID, COLLECTION_ID, remitenteId, {
+  await estudianteDatabase.updateDocument(DB_ID, COLLECTION_ID, remitenteId, {
     balance: remitente.balance - monto
   });
 
-  await database.updateDocument(DB_ID, COLLECTION_ID, destinatarioId, {
+  await estudianteDatabase.updateDocument(DB_ID, COLLECTION_ID, destinatarioId, {
     balance: destinatario.balance + monto
   });
 
-  const estudianteActualizado = await database.getDocument(DB_ID, COLLECTION_ID, remitenteId);
+  const estudianteActualizado = await estudianteDatabase.getDocument(DB_ID, COLLECTION_ID, remitenteId);
   renderStudentCard(estudianteActualizado);
 }
 
 async function eliminarEstudiante(estudianteId) {
-  await database.deleteDocument(DB_ID, COLLECTION_ID, estudianteId);
+  await estudianteDatabase.deleteDocument(DB_ID, COLLECTION_ID, estudianteId);
   document.getElementById('student-card').innerHTML = '';
 }
-TML = '';
-
-

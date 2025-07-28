@@ -1,15 +1,15 @@
-const cliente = new Appwrite.Cliente();
+const dashboardClient = new Appwrite.Client();
 
-cliente
+dashboardClient
   .setEndpoint('https://cloud.appwrite.io/v1')
   .setProject('688733b70004aba4f8f1');
 
-const database = new Appwrite.Databases(cliente);
-const DB_ID = 'TU_DATABASE_ID'; // ← Actualízalo con tu ID real
+const dashboardDatabase = new Appwrite.Databases(dashboardClient);
+const DB_ID = '688733b70004aba4f8f1';
 const COLLECTION_ID = 'estudiantes';
 
 async function obtenerEstudiantes() {
-  const res = await database.listDocuments(DB_ID, COLLECTION_ID);
+  const res = await dashboardDatabase.listDocuments(DB_ID, COLLECTION_ID);
   return res.documents;
 }
 
@@ -44,12 +44,12 @@ async function ingresarEstudiante() {
   const nombre = document.getElementById('student-name').value.trim();
   if (!nombre) return;
 
-  const existentes = await database.listDocuments(DB_ID, COLLECTION_ID, [
+  const existentes = await dashboardDatabase.listDocuments(DB_ID, COLLECTION_ID, [
     Appwrite.Query.equal('nombre', nombre)
   ]);
 
   if (existentes.total === 0) {
-    await database.createDocument(DB_ID, COLLECTION_ID, ID.unique(), {
+    await dashboardDatabase.createDocument(DB_ID, COLLECTION_ID, Appwrite.ID.unique(), {
       nombre,
       balance: 1500,
       netWorth: 0
@@ -60,7 +60,7 @@ async function ingresarEstudiante() {
 }
 
 async function renderStudentCard(nombre) {
-  const res = await database.listDocuments(DB_ID, COLLECTION_ID, [
+  const res = await dashboardDatabase.listDocuments(DB_ID, COLLECTION_ID, [
     Appwrite.Query.equal('nombre', nombre)
   ]);
   const estudiante = res.documents[0];
@@ -78,8 +78,8 @@ async function renderStudentCard(nombre) {
 }
 
 // 🔄 Suscripción en tiempo real
-const realtime = new Appwrite.Realtime(cliente);
-realtime.subscribe(`databases.${DB_ID}.collections.${COLLECTION_ID}.documents`, () => {
+const dashboardRealtime = new Appwrite.Realtime(dashboardClient);
+dashboardRealtime.subscribe(`databases.${DB_ID}.collections.${COLLECTION_ID}.documents`, () => {
   renderDashboard();
 });
 
