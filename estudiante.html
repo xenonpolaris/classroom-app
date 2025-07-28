@@ -2,297 +2,51 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Appwrite Estudiantes</title>
+    <!-- SDK de Appwrite -->
+<script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+
+<!-- Tu lógica personalizada -->
+<script src="estudiante.js"></script>
+
+  <title>Estudiante</title>
   <style>
-    .card {
-      border: 1px solid #ccc;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      margin-top: 1rem;
-      max-width: 300px;
+    body {
+      background-color: #fdf6f0;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    input, select, button {
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #cce2cb;
+      background-color: #fff;
     }
     button {
-      margin-right: 0.5rem;
-      margin-top: 0.5rem;
+      background-color: #ffd1dc;
+      border: none;
+      cursor: pointer;
+    }
+    .card {
+      background-color: #e6f2ff;
+      border: 1px solid #cce2cb;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+    h3 {
+      color: #4d4d4d;
     }
   </style>
 </head>
 <body>
-  <h2>Ingresa tu nombre:</h2>
-  <input id="student-name" type="text" placeholder="Nombre del estudiante" />
-  <button id="botonIngresar" onclick="ingresarEstudiante()">Ingresar</button>
+  <h2>Estudiante</h2>
+  <input id="student-name" placeholder="Ingresa tu nombre" />
+  <button onclick="ingresarEstudiante()">Ingresar</button>
 
   <div id="student-card"></div>
 
-  <!-- SDK de Appwrite desde CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
-  <script>
-    const client = new Appwrite.Client()
-      //.setEndpoint('https://cloud.appwrite.io/v1') // Descomenta si usas instancia personalizada
-      .setProject('688733b70004aba4f8f1');
-
-    const database = new Appwrite.Databases(client);
-    const DB_ID = '688733b70004aba4f8f1';
-    const COLLECTION_ID = 'estudiantes';
-
-    async function ingresarEstudiante() {
-      const nombre = document.getElementById('student-name').value.trim();
-      if (!nombre || nombre.length < 3) return alert('Nombre inválido');
-
-      const existe = await database.listDocuments(DB_ID, COLLECTION_ID, [
-        Appwrite.Query.equal('nombre', nombre)
-      ]);
-
-      let estudiante;
-      if (existe.total === 0) {
-        estudiante = await database.createDocument(DB_ID, COLLECTION_ID, Appwrite.ID.unique(), {
-          nombre,
-          balance: 1500,
-          netWorth: 0
-        });
-      } else {
-        estudiante = existe.documents[0];
-      }
-
-      document.getElementById('student-name').style.display = 'none';
-      document.getElementById('botonIngresar').style.display = 'none';
-
-      renderStudentCard(estudiante);
-    }
-
-    function renderStudentCard(estudiante) {
-      const container = document.getElementById('student-card');
-      container.innerHTML = '';
-
-      const card = document.createElement('div');
-      card.className = 'card estudiante';
-
-      const nombre = document.createElement('h3');
-      nombre.textContent = estudiante.nombre;
-
-      const balance = document.createElement('p');
-      balance.textContent = `Balance: $${estudiante.balance}`;
-
-      const netWorth = document.createElement('p');
-      netWorth.textContent = `Net Worth: $${estudiante.netWorth}`;
-
-      const transferBtn = document.createElement('button');
-      transferBtn.textContent = 'Transferir';
-      transferBtn.onclick = () => mostrarTransferencia(estudiante.$id);
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = 'Eliminar';
-      deleteBtn.onclick = () => eliminarEstudiante(estudiante.$id);
-
-      card.append(nombre, balance, netWorth, transferBtn, deleteBtn);
-      container.appendChild(card);
-    }
-
-    async function mostrarTransferencia(remitenteId) {
-      const container = document.getElementById('student-card');
-
-      const todos = await database.listDocuments(DB_ID, COLLECTION_ID);
-      const remitente = todos.documents.find(e => e.$id === remitenteId);
-
-      const opciones = todos.documents
-        .filter(e => e.$id !== remitenteId)
-        .map(e => `<option value="${e.$id}">${e.nombre}</option>`)
-        .join('');
-
-      const html = `
-        <h4>Transferir fondos</h4>
-        <select id="destinatario">${opciones}</select>
-        <input type="number" id="monto" placeholder="Monto a transferir" min="1" />
-        <button id="btnTransferir" onclick="ejecutarTransferencia('${remitenteId}')">Enviar</button>
-      `;
-      container.insertAdjacentHTML('beforeend', html);
-    }
-
-    async function ejecutarTransferencia(remitenteId) {
-      const btn = document.getElementById('btnTransferir');
-      btn.disabled = true;
-
-      const monto = parseFloat(document.getElementById('monto').value);
-      const destinatarioId = document.getElementById('destinatario').value;
-
-      if (isNaN(monto) || monto <= 0) {
-        btn.disabled = false;
-        return alert('Monto inválido');
-      }
-
-      const remitente = await database.getDocument(DB_ID, COLLECTION_ID, remitenteId);
-      if (remitente.balance < monto) {
-        btn.disabled = false;
-        return alert('Fondos insuficientes');
-      }
-
-      const destinatario = await database.getDocument(DB_ID, COLLECTION_ID, destinatarioId);
-
-      await database.updateDocument(DB_ID, COLLECTION_ID, remitenteId, {
-        balance: remitente.balance - monto
-      });
-
-      await database.updateDocument(DB_ID, COLLECTION_ID, destinatarioId, {
-        balance: destinatario.balance + monto
-      });
-
-      const estudianteActualizado = await database.getDocument(DB_ID, COLLECTION_ID, remitenteId);
-      renderStudentCard(estudianteActualizado);
-    }
-
-    async function eliminarEstudiante(estudianteId) {
-      await database.deleteDocument(DB_ID, COLLECTION_ID, estudianteId);
-      document.getElementById('student-card').innerHTML = '';
-    }
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Appwrite Estudiantes</title>
-  <style>
-    .card {
-      border: 1px solid #ccc;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      margin-top: 1rem;
-      max-width: 300px;
-    }
-    button {
-      margin-right: 0.5rem;
-      margin-top: 0.5rem;
-    }
-  </style>
-</head>
-<body>
-  <h2>Ingresa tu nombre:</h2>
-  <input id="student-name" type="text" placeholder="Nombre del estudiante" />
-  <button id="botonIngresar" onclick="ingresarEstudiante()">Ingresar</button>
-
-  <div id="student-card"></div>
-
-  <!-- SDK de Appwrite desde CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
-  <script>
-    const client = new Appwrite.Client()
-      //.setEndpoint('https://cloud.appwrite.io/v1') // Descomenta si usas instancia personalizada
-      .setProject('688733b70004aba4f8f1');
-
-    const database = new Appwrite.Databases(client);
-    const DB_ID = '688733b70004aba4f8f1';
-    const COLLECTION_ID = 'estudiantes';
-
-    async function ingresarEstudiante() {
-      const nombre = document.getElementById('student-name').value.trim();
-      if (!nombre || nombre.length < 3) return alert('Nombre inválido');
-
-      const existe = await database.listDocuments(DB_ID, COLLECTION_ID, [
-        Appwrite.Query.equal('nombre', nombre)
-      ]);
-
-      let estudiante;
-      if (existe.total === 0) {
-        estudiante = await database.createDocument(DB_ID, COLLECTION_ID, Appwrite.ID.unique(), {
-          nombre,
-          balance: 1500,
-          netWorth: 0
-        });
-      } else {
-        estudiante = existe.documents[0];
-      }
-
-      document.getElementById('student-name').style.display = 'none';
-      document.getElementById('botonIngresar').style.display = 'none';
-
-      renderStudentCard(estudiante);
-    }
-
-    function renderStudentCard(estudiante) {
-      const container = document.getElementById('student-card');
-      container.innerHTML = '';
-
-      const card = document.createElement('div');
-      card.className = 'card estudiante';
-
-      const nombre = document.createElement('h3');
-      nombre.textContent = estudiante.nombre;
-
-      const balance = document.createElement('p');
-      balance.textContent = `Balance: $${estudiante.balance}`;
-
-      const netWorth = document.createElement('p');
-      netWorth.textContent = `Net Worth: $${estudiante.netWorth}`;
-
-      const transferBtn = document.createElement('button');
-      transferBtn.textContent = 'Transferir';
-      transferBtn.onclick = () => mostrarTransferencia(estudiante.$id);
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = 'Eliminar';
-      deleteBtn.onclick = () => eliminarEstudiante(estudiante.$id);
-
-      card.append(nombre, balance, netWorth, transferBtn, deleteBtn);
-      container.appendChild(card);
-    }
-
-    async function mostrarTransferencia(remitenteId) {
-      const container = document.getElementById('student-card');
-
-      const todos = await database.listDocuments(DB_ID, COLLECTION_ID);
-      const remitente = todos.documents.find(e => e.$id === remitenteId);
-
-      const opciones = todos.documents
-        .filter(e => e.$id !== remitenteId)
-        .map(e => `<option value="${e.$id}">${e.nombre}</option>`)
-        .join('');
-
-      const html = `
-        <h4>Transferir fondos</h4>
-        <select id="destinatario">${opciones}</select>
-        <input type="number" id="monto" placeholder="Monto a transferir" min="1" />
-        <button id="btnTransferir" onclick="ejecutarTransferencia('${remitenteId}')">Enviar</button>
-      `;
-      container.insertAdjacentHTML('beforeend', html);
-    }
-
-    async function ejecutarTransferencia(remitenteId) {
-      const btn = document.getElementById('btnTransferir');
-      btn.disabled = true;
-
-      const monto = parseFloat(document.getElementById('monto').value);
-      const destinatarioId = document.getElementById('destinatario').value;
-
-      if (isNaN(monto) || monto <= 0) {
-        btn.disabled = false;
-        return alert('Monto inválido');
-      }
-
-      const remitente = await database.getDocument(DB_ID, COLLECTION_ID, remitenteId);
-      if (remitente.balance < monto) {
-        btn.disabled = false;
-        return alert('Fondos insuficientes');
-      }
-
-      const destinatario = await database.getDocument(DB_ID, COLLECTION_ID, destinatarioId);
-
-      await database.updateDocument(DB_ID, COLLECTION_ID, remitenteId, {
-        balance: remitente.balance - monto
-      });
-
-      await database.updateDocument(DB_ID, COLLECTION_ID, destinatarioId, {
-        balance: destinatario.balance + monto
-      });
-
-      const estudianteActualizado = await database.getDocument(DB_ID, COLLECTION_ID, remitenteId);
-      renderStudentCard(estudianteActualizado);
-    }
-
-    async function eliminarEstudiante(estudianteId) {
-      await database.deleteDocument(DB_ID, COLLECTION_ID, estudianteId);
-      document.getElementById('student-card').innerHTML = '';
-    }
-  </script>
+  <script src="estudiante.js"></script>
 </body>
 </html>
