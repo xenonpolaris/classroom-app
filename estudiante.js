@@ -1,4 +1,4 @@
-// Configuración del cliente de Appwrite para estudiantes
+
 const estudianteClient = new Appwrite.Client()
   .setEndpoint('https://cloud.appwrite.io/v1')
   .setProject('6887335f0033b38b7bd2');
