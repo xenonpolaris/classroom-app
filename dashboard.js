@@ -5,7 +5,7 @@ const dashboardClient = new Appwrite.Client()
 const dashboardDatabase = new Appwrite.Databases(dashboardClient);
 
 const DATABASE_ID = '688733b70004aba4f8f1';
-const COLLECTION_ID = '688733d300186c50067b';
+const COLLECTION_ID = 'estudiantes';
 
 // Verificar conexión usando una lectura válida
 async function verificarConfiguracion() {
