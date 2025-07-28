@@ -9,7 +9,7 @@ const estudianteDatabase = new Appwrite.Databases(estudianteClient);
 // Configuración correcta
 const PROJECT_ID = '6887335f0033b38b7bd2';                // ← ID de proyecto
 const DATABASE_ID = '688733b70004aba4f8f1';               // ← ID de base de datos
-const COLLECTION_ID = '688733d300186c50067b';             // ← ID de colección
+const COLLECTION_ID = 'estudiantes';             // ← ID de colección
 
 
 async function ingresarEstudiante() {
