@@ -1,13 +1,13 @@
 // Configuración del cliente de Appwrite para estudiantes
 const estudianteClient = new Appwrite.Client()
   .setEndpoint('https://cloud.appwrite.io/v1')
-  .setProject('688733b70004aba4f8f1');
+  .setProject('6887335f0033b38b7bd2');
 
 const estudianteDatabase = new Appwrite.Databases(estudianteClient);
 
 // IMPORTANTE: Verifica estos IDs en tu consola de Appwrite
 const PROJECT_ID = '688733b70004aba4f8f1';
-const DATABASE_ID = 'main'; // Cambia esto por tu Database ID real
+const 688733b70004aba4f8f1 = 'main'; // Cambia esto por tu Database ID real
 const COLLECTION_ID = 'estudiantes'; // Verifica que esta colección existe
 
 async function ingresarEstudiante() {
