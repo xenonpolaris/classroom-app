@@ -116,4 +116,4 @@ async function eliminarEstudiante(estudianteId) {
   document.getElementById('student-card').innerHTML = '';
 }
 TML = '';
-}
+
